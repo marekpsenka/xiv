@@ -1,54 +1,57 @@
-from pylatex import Document, Section, Table, Tabular, Package
+from pylatex import Document, Table, Tabular, Package
 from pylatex.utils import NoEscape
 import os
 import datetime
 
+
 def generate_weekly_notes_table(start_date_str):
-    """
-    Generates a LaTeX document with a landscape table for weekly notes.
-
-    Args:
-        start_date_str (str): The starting date for the first week (YYYY-MM-DD).
-        filename (str): The name of the output LaTeX file (without extension).
-    """
     doc = Document()
-    doc.packages.append(Package('geometry', options=['landscape', 'margin=1in']))
+    doc.packages.append(
+        Package("geometry", options=["landscape", "margin=0.5cm"])
+    )
 
-    with doc.create(Section("Weekly Notes")):
-        with doc.create(Table(position='h!')) as table:
-            # table.add_row(NoEscape(r'\hline'))
-            with table.create(Tabular('|' + 'p{3cm}|' * 7 + '|')) as tabular:
-                tabular.add_hline()
-                # First week
-                start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date()
-                headers = []
-                for i in range(7):
-                    current_date = start_date + datetime.timedelta(days=i)
-                    date_str = current_date.strftime('%d.%m.')
-                    weekday_str = current_date.strftime('%a')
-                    headers.append(NoEscape(f'\\textbf{{{date_str} {weekday_str}}}'))
+    with doc.create(Table(position="h!")) as table:
+        with table.create(Tabular("|" + "p{3.38cm}|" * 7)) as tabular:
+            tabular.add_hline()
+            # First week
+            start_date = datetime.datetime.strptime(
+                start_date_str, "%Y-%m-%d"
+            ).date()
+            headers = []
+            for i in range(7):
+                current_date = start_date + datetime.timedelta(days=i)
+                date_str = current_date.strftime("%d.%m.")
+                weekday_str = current_date.strftime("%a")
+                headers.append(
+                    NoEscape(f"\\textbf{{{date_str} {weekday_str}}}")
+                )
 
-                tabular.add_row(tuple(headers))
-                tabular.add_row([''] * 7)
-                tabular.add_hline()
+            tabular.add_row(tuple(headers))
+            tabular.add_row([""] * 7)
+            tabular.add_hline()
 
-                # Second week
-                next_week_start_date = start_date + datetime.timedelta(days=7)
-                headers = []
-                for i in range(7):
-                    current_date = next_week_start_date + datetime.timedelta(days=i)
-                    date_str = current_date.strftime('%d.%m.')
-                    weekday_str = current_date.strftime('%a')
-                    headers.append(NoEscape(f'\\textbf{{{date_str} {weekday_str}}}'))
+            # Second week
+            next_week_start_date = start_date + datetime.timedelta(days=7)
+            headers = []
+            for i in range(7):
+                current_date = next_week_start_date + datetime.timedelta(
+                    days=i
+                )
+                date_str = current_date.strftime("%d.%m.")
+                weekday_str = current_date.strftime("%a")
+                headers.append(
+                    NoEscape(f"\\textbf{{{date_str} {weekday_str}}}")
+                )
 
-                tabular.add_row(tuple(headers))
-                tabular.add_row([''] * 7)
-                tabular.add_hline()
+            tabular.add_row(tuple(headers))
+            tabular.add_row([""] * 7)
+            tabular.add_hline()
 
     filename = "weekly_notes"
     out_dir = "build"
     doc.generate_pdf(os.path.join(out_dir, filename), clean_tex=False)
     print(f"LaTeX document '{filename}.pdf' generated successfully.")
+
 
 if __name__ == "__main__":
     # Example usage: Start the table with the week of April 6th, 2025 (Sunday)
