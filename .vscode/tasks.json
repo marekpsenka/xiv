@@ -1,0 +1,19 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "xiv at specific date",
+            "type": "shell",
+            "command": "python",
+            "args": ["xiv.py", "-d", "${input:date}"],
+            "problemMatcher": [],
+        }
+    ],
+    "inputs": [
+        {
+        "type": "promptString",
+        "id": "date",
+        "description": "Enter date in YYYY-MM-DD format."
+        }
+    ]
+}
