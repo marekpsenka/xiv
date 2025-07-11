@@ -7,6 +7,27 @@
             "command": "python",
             "args": ["xiv.py", "-d", "${input:date}"],
             "problemMatcher": [],
+        },
+        {
+            "label": "xiv today",
+            "type": "shell",
+            "command": "python",
+            "args": ["xiv.py", "-t"],
+            "problemMatcher": [],
+        },
+        {
+            "label": "iv at specific date",
+            "type": "shell",
+            "command": "python",
+            "args": ["iv.py", "-d", "${input:date}"],
+            "problemMatcher": [],
+        },
+        {
+            "label": "iv today",
+            "type": "shell",
+            "command": "python",
+            "args": ["iv.py", "-t"],
+            "problemMatcher": [],
         }
     ],
     "inputs": [
