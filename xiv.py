@@ -1,18 +1,11 @@
-from pylatex import Document, Table, Tabular, Package
+from pylatex import Document, Table, Tabular, Package, NewPage
 from pylatex.utils import NoEscape
 import os
 import datetime
 import argparse
 
 
-def generate_xiv_table(start_date: datetime.date, out_dir: str):
-    doc = Document()
-    doc.packages.append(
-        Package("geometry", options=["landscape", "margin=0.5cm"])
-    )
-    doc.packages.append(Package("fontenc", options=["T1"]))
-    doc.packages.append(Package("tgbonum"))
-
+def generate_xiv_table(start_date: datetime.date, doc: Document):
     with doc.create(Table(position="h!")) as table:
         with table.create(Tabular("|" + "p{3.38cm}|" * 7)) as tabular:
             tabular.add_hline()
@@ -52,6 +45,21 @@ def generate_xiv_table(start_date: datetime.date, out_dir: str):
             tabular.add_row(empty_row)
             tabular.add_hline()
 
+
+def generate_xiv(start_date: datetime.date, out_dir: str, single_page: bool):
+    doc = Document()
+    doc.packages.append(
+        Package("geometry", options=["landscape", "margin=0.5cm"])
+    )
+    doc.packages.append(Package("fontenc", options=["T1"]))
+    doc.packages.append(Package("tgbonum"))
+
+    generate_xiv_table(start_date, doc)
+
+    if not single_page:
+        doc.create(NewPage())
+        generate_xiv_table(start_date + datetime.timedelta(days=14), doc)
+
     filename = "xiv_" + start_date.strftime("%y%m%d")
     os.makedirs(out_dir, exist_ok=True)
     doc.generate_pdf(os.path.join(out_dir, filename), clean_tex=False)
@@ -85,17 +93,24 @@ if __name__ == "__main__":
         help="Directory to save the output PDF (default: build).",
     )
 
+    parser.add_argument(
+        "--single-page",
+        "-s",
+        action="store_true",
+        help="Generate only one XIV page instead of two (default: False)",
+    )
+
     args = parser.parse_args()
 
     if args.today:
         start_date = datetime.date.today()
-        generate_xiv_table(start_date, args.output_dir)
+        generate_xiv(start_date, args.output_dir, args.single_page)
     elif args.date:
         try:
             start_date = datetime.datetime.strptime(
                 args.date, "%Y-%m-%d"
             ).date()
-            generate_xiv_table(start_date, args.output_dir)
+            generate_xiv(start_date, args.output_dir, args.single_page)
         except ValueError:
             print("Error: Invalid date format. Please use YYYY-MM-DD.")
     else:
