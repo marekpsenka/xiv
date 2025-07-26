@@ -1,30 +1,17 @@
-from pylatex import Document, Table, Tabular, NoEscape, Package
+from pylatex import Document, Table, Tabular, NoEscape, Package, NewPage
 from pylatex.utils import bold
 import datetime as dt
 import argparse
 import os
 
 
-def create_weekly_overview_pdf(start_date_str, out_dir: str):
-    """
-    Generates a four-week overview PDF table starting from the given date.
-    """
-
-    # Determine the start of the week (Monday) for the given date
-    # Weekday 0 is Monday, 6 is Sunday
-    start_of_first_week = start_date - dt.timedelta(days=start_date.weekday())
-
-    doc = Document()
-    doc.packages.append(Package("geometry", options=["margin=0.5cm"]))
-    doc.packages.append(Package("fontenc", options=["T1"]))
-    doc.packages.append(Package("tgbonum"))
-
+def create_weekly_overview_table(start_date: dt.date, doc: Document):
     table = Table(position="h!")
     tabular = Tabular(r"|p{20cm}|")
 
     tabular.add_hline()
     for i in range(4):
-        current_week_start = start_of_first_week + dt.timedelta(weeks=i)
+        current_week_start = start_date + dt.timedelta(weeks=i)
         current_week_end = current_week_start + dt.timedelta(days=6)
 
         week_number = current_week_start.isocalendar()[1]  # ISO week number
@@ -51,10 +38,35 @@ def create_weekly_overview_pdf(start_date_str, out_dir: str):
     table.append(tabular)
     doc.append(table)
 
+
+def create_weekly_overview(
+    start_date: dt.date, out_dir: str, single_page: bool
+):
+    """
+    Generates a four-week overview PDF table starting from the given date.
+    """
+
+    # Determine the start of the week (Monday) for the given date
+    # Weekday 0 is Monday, 6 is Sunday
+    start_of_first_week = start_date - dt.timedelta(days=start_date.weekday())
+
+    doc = Document()
+    doc.packages.append(Package("geometry", options=["margin=0.5cm"]))
+    doc.packages.append(Package("fontenc", options=["T1"]))
+    doc.packages.append(Package("tgbonum"))
+
+    create_weekly_overview_table(start_of_first_week, doc)
+
+    if not single_page:
+        doc.create(NewPage())
+        create_weekly_overview_table(
+            start_of_first_week + dt.timedelta(weeks=4), doc
+        )
+
     filename = "iv_" + start_date.strftime("%y%m%d")
     os.makedirs(out_dir, exist_ok=True)
     doc.generate_pdf(os.path.join(out_dir, filename), clean_tex=False)
-    print(f"Generated {filename} starting from week of {start_date_str}")
+    print(f"Generated {filename} starting from week of {start_date}")
 
 
 if __name__ == "__main__":
@@ -84,15 +96,24 @@ if __name__ == "__main__":
         help="Directory to save the output PDF (default: build).",
     )
 
+    parser.add_argument(
+        "--single-page",
+        "-s",
+        action="store_true",
+        help="Generate only one IV page instead of two (default: False)",
+    )
+
     args = parser.parse_args()
 
     if args.today:
         start_date = dt.date.today()
-        create_weekly_overview_pdf(start_date, args.output_dir)
+        create_weekly_overview(start_date, args.output_dir, args.single_page)
     elif args.date:
         try:
             start_date = dt.datetime.strptime(args.date, "%Y-%m-%d").date()
-            create_weekly_overview_pdf(start_date, args.output_dir)
+            create_weekly_overview(
+                start_date, args.output_dir, args.single_page
+            )
         except ValueError:
             print("Error: Invalid date format. Please use YYYY-MM-DD.")
     else:

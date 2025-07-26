@@ -27,6 +27,14 @@
             "program": "${workspaceFolder}/iv.py",
             "console": "integratedTerminal",
             "args": [ "-d", "2025-07-14" ]
+        },
+        {
+            "name": "iv today",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/iv.py",
+            "console": "integratedTerminal",
+            "args": [ "-t" ]
         }
     ]
 }
